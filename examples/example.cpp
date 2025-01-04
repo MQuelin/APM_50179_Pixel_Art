@@ -23,11 +23,12 @@ xt::xarray<float> mat_to_arr(const cv::Mat &mat) {
   xt::xarray<float> arr = xt::empty<float>({nrows, ncols, nchannels});
   for (int rr = 0; rr < nrows; rr++) {
     for (int cc = 0; cc < ncols; cc++) {
-      cv::Vec3f pxl = mat.at<float>(rr, cc);
-      cv::Vec3f pxl_copy = pxl;
-      // std::cout << pxl[0] << std::endl;
+      cv::Vec3f pxl = mat.at<cv::Vec3f>(rr, cc);
+      std::cout << pxl[0] << std::endl;
+      std::cout << pxl[1] << std::endl;
+      std::cout << pxl[2] << std::endl;
       for (int chan = 0; chan < nchannels; chan++) {
-        arr(rr, cc, chan) = pxl_copy[chan];
+        arr(rr, cc, chan) = pxl[chan];
       }
     }
   }
@@ -39,14 +40,14 @@ cv::Mat arr_to_mat(const xt::xarray<float> &arr) {
   assert(ndims == 3 && "can only convert 3d xarrays");
   int nrows = arr.shape()[0];
   int ncols = arr.shape()[1];
-  cv::Mat mat(nrows, ncols, 3, CV_32FC3);
+  cv::Mat mat = cv::Mat::zeros(nrows, ncols, CV_32FC3);
   for (int rr = 0; rr < nrows; rr++) {
     for (int cc = 0; cc < ncols; cc++) {
       std::cout << arr(rr, cc, 0) << std::endl;
       std::cout << arr(rr, cc, 1) << std::endl;
       std::cout << arr(rr, cc, 2) << std::endl << std::endl;
       for (int chan = 0; chan < 3; chan++) {
-        mat.at<cv::Vec3f>(rr, cc)[chan] = 1.; // arr(rr, cc, chan);
+        mat.at<cv::Vec3f>(rr, cc)[chan] = arr(rr, cc, chan);
       };
     }
   }
@@ -72,6 +73,7 @@ int main() {
   int type = img.type();
   std::cout << "image type: " << cv::typeToString(type) << std::endl;
 
+  std::cout << img << std::endl;
   std::cout << "mat_to_arr" << std::endl;
   auto img_arr = mat_to_arr(img);
   // std::cout << img_arr << std::endl;
