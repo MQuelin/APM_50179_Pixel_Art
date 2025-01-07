@@ -67,8 +67,8 @@ int main() {
     return 1;
   }
 
-  imshow("Display window", img);
-  cv::waitKey(0); // Wait for a keystroke in the window
+  // imshow("Display window", img);
+  // cv::waitKey(0); // Wait for a keystroke in the window
 
   int type = img.type();
   std::cout << "image type: " << cv::typeToString(type) << std::endl;
@@ -83,8 +83,8 @@ int main() {
 
   cv::imwrite("../examples/SpaceShip-24x24-bis.png", img2);
 
-  imshow("Display window 2", img2);
-  cv::waitKey(0); // Wait for a keystroke in the window
+  // imshow("Display window 2", img2);
+  // cv::waitKey(0); // Wait for a keystroke in the window
 
   return 0;
 }
