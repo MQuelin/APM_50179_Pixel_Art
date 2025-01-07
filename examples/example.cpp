@@ -1,26 +1,38 @@
 #include <opencv2/core.hpp>
-#include <opencv2/highgui.hpp>
 #include <opencv2/imgcodecs.hpp>
-
 #include <iostream>
+#include <filesystem> // To handle folder creation
 
 using namespace cv;
 
 int main() {
-  std::string image_path = samples::findFile("examples/TL_Creatures.png");
-  Mat img = imread(image_path, IMREAD_COLOR);
+    // Set the image path
+    std::string image_path = samples::findFile("examples/TL_Creatures.png");
+    Mat img = imread(image_path, IMREAD_COLOR);
 
-  if (img.empty()) {
-    std::cout << "Could not read the image: " << image_path << std::endl;
-    return 1;
-  }
+    // Check if the image is successfully read
+    if (img.empty()) {
+        std::cerr << "Could not read the image: " << image_path << std::endl;
+        return 1;
+    }
 
-  imshow("Display window", img);
-  int k = waitKey(0); // Wait for a keystroke in the window
+    // Define the output folder and file name
+    std::string output_folder = "visualisation";
+    std::string output_file = output_folder + "/example_output_image.png";
 
-  if (k == 's') {
-    imwrite("starry_night.png", img);
-  }
+    // Create the output folder if it doesn't exist
+    if (!std::filesystem::exists(output_folder)) {
+        std::filesystem::create_directories(output_folder);
+    }
 
-  return 0;
+    // Save the image to the output file
+    if (!imwrite(output_file, img)) {
+        std::cerr << "Failed to save the image to: " << output_file << std::endl;
+        return 1;
+    }
+
+    // Notify the user of the successful save
+    std::cout << "Image saved successfully to: " << output_file << std::endl;
+
+    return 0;
 }
