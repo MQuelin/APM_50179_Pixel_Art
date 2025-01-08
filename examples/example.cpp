@@ -12,52 +12,12 @@
 #include <iostream>
 #include <xtensor/xtensor_forward.hpp>
 
-// Utilities to convert back and forth between opencv's mat and xtensor's xarray
-// for use with depixel_lib
-xt::xarray<float> mat_to_arr(const cv::Mat &mat) {
-  int ndims = mat.dims;
-  assert(ndims == 2);
-  int nrows = mat.rows;
-  int ncols = mat.cols;
-  int nchannels = 3;
-  xt::xarray<float> arr = xt::empty<float>({nrows, ncols, nchannels});
-  for (int rr = 0; rr < nrows; rr++) {
-    for (int cc = 0; cc < ncols; cc++) {
-      cv::Vec3f pxl = mat.at<cv::Vec3f>(rr, cc);
-      std::cout << pxl[0] << std::endl;
-      std::cout << pxl[1] << std::endl;
-      std::cout << pxl[2] << std::endl;
-      for (int chan = 0; chan < nchannels; chan++) {
-        arr(rr, cc, chan) = pxl[chan];
-      }
-    }
-  }
-  return arr;
-}
-
-cv::Mat arr_to_mat(const xt::xarray<float> &arr) {
-  int ndims = arr.dimension();
-  assert(ndims == 3 && "can only convert 3d xarrays");
-  int nrows = arr.shape()[0];
-  int ncols = arr.shape()[1];
-  cv::Mat mat = cv::Mat::zeros(nrows, ncols, CV_32FC3);
-  for (int rr = 0; rr < nrows; rr++) {
-    for (int cc = 0; cc < ncols; cc++) {
-      std::cout << arr(rr, cc, 0) << std::endl;
-      std::cout << arr(rr, cc, 1) << std::endl;
-      std::cout << arr(rr, cc, 2) << std::endl << std::endl;
-      for (int chan = 0; chan < 3; chan++) {
-        mat.at<cv::Vec3f>(rr, cc)[chan] = arr(rr, cc, chan);
-      };
-    }
-  }
-  return mat;
-}
+#include "depixel_lib/utils.hpp"
 
 int main() {
     // Set the image path
-    std::string image_path = samples::findFile("examples/TL_Creatures.png");
-    Mat img = imread(image_path, IMREAD_COLOR);
+    std::string image_path = cv::samples::findFile("../examples/SpaceShip-24x24.png");
+    cv::Mat img_test = cv::imread(image_path, cv::IMREAD_COLOR);
   cv::Mat img_base =
       imread("../examples/SpaceShip-24x24.png", cv::IMREAD_COLOR);
   cv::Mat img;
@@ -85,7 +45,7 @@ int main() {
     }
 
     // Save the image to the output file
-    if (!imwrite(output_file, img)) {
+    if (!imwrite(output_file, img_test)) {
         std::cerr << "Failed to save the image to: " << output_file << std::endl;
         return 1;
     }
@@ -95,21 +55,21 @@ int main() {
   // imshow("Display window", img);
   // cv::waitKey(0); // Wait for a keystroke in the window
 
-  int type = img.type();
-  std::cout << "image type: " << cv::typeToString(type) << std::endl;
+//   int type = img.type();
+//   std::cout << "image type: " << cv::typeToString(type) << std::endl;
 
-  std::cout << img << std::endl;
-  std::cout << "mat_to_arr" << std::endl;
-  auto img_arr = mat_to_arr(img);
-  // std::cout << img_arr << std::endl;
-  std::cout << "arr_to_mat" << std::endl;
-  auto img2 = arr_to_mat(img_arr);
-  std::cout << img2 << std::endl;
+//   //std::cout << img << std::endl;
+//   std::cout << "mat_to_arr" << std::endl;
+//   auto img_arr = utils::mat_to_arr(img);
+//   // std::cout << img_arr << std::endl;
+//   std::cout << "arr_to_mat" << std::endl;
+//   auto img2 = utils::arr_to_mat(img_arr);
+//   //std::cout << img2 << std::endl;
 
-  cv::imwrite("../examples/SpaceShip-24x24-bis.png", img2);
+//   cv::imwrite("../examples/SpaceShip-24x24-bis.png", img2);
 
-  // imshow("Display window 2", img2);
-  // cv::waitKey(0); // Wait for a keystroke in the window
+//   // imshow("Display window 2", img2);
+//   // cv::waitKey(0); // Wait for a keystroke in the window
 
     return 0;
 }
