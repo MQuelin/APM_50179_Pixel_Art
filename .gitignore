@@ -36,3 +36,6 @@ build/*
 
 # Neovim cache
 .cache
+
+# Others
+.vscode/
