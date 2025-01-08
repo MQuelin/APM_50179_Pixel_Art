@@ -150,7 +150,7 @@ cv::Mat Graph::draw_neighbours() {
         cv::line(output_image, cv::Point(x, 0), cv::Point(x, output_image.rows), cv::Scalar(192, 192, 192), 1);
     }
 
-    cv::imwrite("visualisation/output_base_image.png", output_image);
+    //cv::imwrite("visualisation/output_base_image.png", output_image);
 
     // Iterate through each pixel
     int rows = m_neighbours.shape()[0];
@@ -211,8 +211,8 @@ cv::Mat Graph::draw_neighbours() {
                 }
             }
         }
-        std::string file_path = "visualisation/output_image_" + std::to_string(y) + ".png";
-        cv::imwrite(file_path, output_image);
+        //std::string file_path = "visualisation/output_image_" + std::to_string(y) + ".png";
+        //cv::imwrite(file_path, output_image);
     }
 
     // Optionally downscale the final image
