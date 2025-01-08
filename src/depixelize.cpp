@@ -1,7 +1,7 @@
 #include "depixel_lib/depixelize.hpp"
-#include "depixel_lib/cells.hpp"
-#include "depixel_lib/graph.hpp"
-#include "depixel_lib/spline.hpp"
+#include "cells.hpp"
+#include "graph.hpp"
+#include "spline.hpp"
 
 namespace dpxl {
 
