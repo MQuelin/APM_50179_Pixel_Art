@@ -42,7 +42,7 @@ namespace dpxl
 }
 
 
-    cv::Mat arr_to_mat(const xt::xarray<uint8_t> &arr) {
+    cv::Mat arr_to_mat(const xt::xarray<float> &arr) {
     // Ensure the input array has 3 dimensions
     assert(arr.dimension() == 3 && "Expected a 3D xarray");
 
@@ -60,7 +60,7 @@ namespace dpxl
         for (int cc = 0; cc < ncols; cc++) {
             cv::Vec3b pxl;
             for (int chan = 0; chan < nchannels; chan++) {
-                pxl[chan] = arr(rr, cc, chan);
+                pxl[chan] = static_cast<uint8_t>(arr(rr, cc, chan) * 255.0f);
             }
             mat.at<cv::Vec3b>(rr, cc) = pxl;
         }
