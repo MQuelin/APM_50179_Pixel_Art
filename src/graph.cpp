@@ -203,7 +203,7 @@ cv::Mat Graph::draw_neighbours() {
                             // Check bounds before drawing
                             if (neighbor_pixel.x >= 0 && neighbor_pixel.x < output_image.cols &&
                                 neighbor_pixel.y >= 0 && neighbor_pixel.y < output_image.rows) {
-                                cv::line(output_image, current_pixel, neighbor_pixel, cv::Scalar(0, 0, 255), 1);
+                                cv::line(output_image, current_pixel, neighbor_pixel, cv::Scalar(0, 0, 255), 2);
                             }
                         }
                     }
