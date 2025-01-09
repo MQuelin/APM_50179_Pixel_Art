@@ -11,8 +11,11 @@ PROJECT(
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(CTest)
-
 add_subdirectory(external/googletest)
+
+add_subdirectory(external/boost EXCLUDE_FROM_ALL)
+set(BOOST_INCLUDE_LIBRARIES polygon)
+
 add_subdirectory(examples)
 add_subdirectory(src)
 add_subdirectory(test)

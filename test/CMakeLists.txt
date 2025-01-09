@@ -8,4 +8,4 @@ if(BUILD_TESTING)
 endif()
 
 # Link libraries with the test_graph executable
-target_link_libraries(test_graph PUBLIC depixel_lib xtensor ${OpenCV_LIBS})
+# target_link_libraries(test_graph PUBLIC depixel_lib xtensor ${OpenCV_LIBS})
