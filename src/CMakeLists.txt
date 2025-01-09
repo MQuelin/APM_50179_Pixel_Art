@@ -1,4 +1,4 @@
-set(LIB_SRCS graph.cpp depixelize.cpp cells.cpp spline.cpp utils.cpp)
+set(LIB_SRCS graph.cpp depixelize.cpp cells.cpp spline.cpp utils.cpp heuristics.cpp)
 
 find_package(xtensor REQUIRED)
 find_package(OpenCV REQUIRED)
