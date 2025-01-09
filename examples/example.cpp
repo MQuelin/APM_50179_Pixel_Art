@@ -8,11 +8,26 @@
 #include <xtensor/xadapt.hpp>
 #include <xtensor/xarray.hpp>
 
+#include "depixel_lib/cells.hpp"
+
 #include <filesystem>
 #include <iostream>
 #include <xtensor/xtensor_forward.hpp>
 
-#include "depixel_lib/utils.hpp"
+void test_voronoi_1() {
+
+  xt::xarray<float> img = {
+      {{1., 1., 1.}, {1., 1., 1.}, {1., 1., 1.}, {1., 1., 1.}},
+      {{1., 1., 1.}, {1., 1., 1.}, {1., 1., 1.}, {1., 1., 1.}},
+      {{0., 0., 0.}, {0., 0., 0.}, {0., 0., 0.}, {0., 0., 0.}},
+      {{0., 0., 0.}, {0., 0., 0.}, {0., 0., 0.}, {0., 0., 0.}}};
+
+  dpxl::Graph g(img);
+
+  dpxl::VoronoiCells c;
+
+  c.build_from_graph(g);
+}
 
 int main() {
   // Set the image path
@@ -47,21 +62,23 @@ int main() {
   // imshow("Display window", img);
   // cv::waitKey(0); // Wait for a keystroke in the window
 
-//   int type = img.type();
-//   std::cout << "image type: " << cv::typeToString(type) << std::endl;
+  //   int type = img.type();
+  //   std::cout << "image type: " << cv::typeToString(type) << std::endl;
 
-//   //std::cout << img << std::endl;
-//   std::cout << "mat_to_arr" << std::endl;
-//   auto img_arr = utils::mat_to_arr(img);
-//   // std::cout << img_arr << std::endl;
-//   std::cout << "arr_to_mat" << std::endl;
-//   auto img2 = utils::arr_to_mat(img_arr);
-//   //std::cout << img2 << std::endl;
+  //   //std::cout << img << std::endl;
+  //   std::cout << "mat_to_arr" << std::endl;
+  //   auto img_arr = utils::mat_to_arr(img);
+  //   // std::cout << img_arr << std::endl;
+  //   std::cout << "arr_to_mat" << std::endl;
+  //   auto img2 = utils::arr_to_mat(img_arr);
+  //   //std::cout << img2 << std::endl;
 
-//   cv::imwrite("../examples/SpaceShip-24x24-bis.png", img2);
+  //   cv::imwrite("../examples/SpaceShip-24x24-bis.png", img2);
 
-//   // imshow("Display window 2", img2);
-//   // cv::waitKey(0); // Wait for a keystroke in the window
+  //   // imshow("Display window 2", img2);
+  //   // cv::waitKey(0); // Wait for a keystroke in the window
+
+  test_voronoi_1();
 
   return 0;
 }
