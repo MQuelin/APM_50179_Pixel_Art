@@ -50,7 +50,7 @@ void Graph::init_graph() {
     std::size_t width = m_img.shape()[1];
     m_neighbours = xt::xarray<bool>::from_shape({height, width, 8});
     compute_neighbours();
-    remove_trivial_edges();
+    resolve_diagonals();
 }
     
 
@@ -90,6 +90,8 @@ xt::xarray<bool> Graph::get_neighbours() {
 xt::xarray<float> Graph::get_image() {
     return m_img;
 }
+
+void Graph::resolve_diagonals(){}
 
 void Graph::remove_trivial_edges() {
     // this function removes the diagonal edges when all 4 corners of a square are the same colors (flat shaded region)

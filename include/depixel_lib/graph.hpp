@@ -25,6 +25,7 @@ private:
   
   void init_graph();
   void compute_neighbours();
+  void resolve_diagonals();
   void remove_trivial_edges();
 
   bool is_close_color(const xt::xarray<float>& color_pixel, const xt::xarray<float>& color_neighboor);
