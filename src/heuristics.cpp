@@ -19,8 +19,9 @@ namespace dpxl {
 
         // Step 2: Curves Heuristic
         // Check if the pixels are part of long curve features
-        std::size_t curve_length_1 = compute_curve_length(i, j); // Diagonal 1 (Top-left to Bottom-right)
-        std::size_t curve_length_2 = compute_curve_length(i, j+1); // Diagonal 2 (Top-right to Bottom-left)
+        
+        std::size_t curve_length_1 = std::max(compute_curve_length(i, j), compute_curve_length(i+1,j+1)); // Diagonal 1 (Top-left to Bottom-right)
+        std::size_t curve_length_2 = std::max(compute_curve_length(i, j+1), compute_curve_length(i+1,j)); // Diagonal 2 (Top-right to Bottom-left)
         
         std::cout << "Curve1 " << curve_length_1 << std::endl;
         std::cout << "Curve2 " << curve_length_2 << std::endl;
@@ -50,8 +51,6 @@ namespace dpxl {
 
         if (total_weight > 0) {
             // Keep Diagonal 1 (Top-left to Bottom-right)
-            m_neighbours(i, j, 7) = true;
-            m_neighbours(i + 1, j + 1, 3) = true;
             m_neighbours(i + 1, j, 1) = false;
             m_neighbours(i, j + 1, 5) = false;
         }
@@ -59,8 +58,6 @@ namespace dpxl {
             // Keep Diagonal 2 (Top-right to Bottom-left)
             m_neighbours(i, j, 7) = false;
             m_neighbours(i + 1, j + 1, 3) = false;
-            m_neighbours(i + 1, j, 1) = true;
-            m_neighbours(i, j + 1, 5) = true;
         }
         else{
             // Keep none
@@ -88,21 +85,34 @@ namespace dpxl {
         std::size_t width = get_width();
         int sum = 0;
 
-        for (auto k = std::min(0, static_cast<int>(i) - 3); k < std::max(i+4, height); ++k){
-            for (auto l = std::min(0, static_cast<int>(j) - 3); k < std::max(j+4, width); ++l){
-                xt::xarray<float> current_color= xt::view(m_img, k, l, xt::all());
-                if (is_close_color(current_color, color_1)) sum++;
-                else if(is_close_color(current_color, color_2)) sum--;
+        // Define the 8x8 window bounds
+        std::size_t start_row = (i > 3) ? i - 3 : 0;
+        std::size_t end_row = std::min(i + 4, height);
+        std::size_t start_col = (j > 3) ? j - 3 : 0;
+        std::size_t end_col = std::min(j + 4, width);
+
+        for (std::size_t k = start_row; k < end_row; ++k) {
+            for (std::size_t l = start_col; l < end_col; ++l) {
+                xt::xarray<float> current_color = xt::view(m_img, k, l, xt::all());
+
+                // Compare colors to calculate the sum
+                if (is_close_color(current_color, color_1)) {
+                    sum--; //Voting in favor of color_2, because color_1 present
+                } else if (is_close_color(current_color, color_2)) {
+                    sum++; //the opposite
+                }
             }
         }
+
         return sum;
     }
 
     std::vector<std::size_t> Graph::get_neighbours_list(std::size_t i, std::size_t j) {
         auto neighbour_subarray = xt::view(m_neighbours, i,j, xt::all());
+        //std::cout << "Neighbour array " << neighbour_subarray << std::endl;
         std::vector<std::size_t> neighbour_list;
         // Iterate over the subarray to find the indices of true values
-        for (std::size_t k = 0; k < neighbour_subarray.size(); ++k) {
+        for (std::size_t k = 0; k < 8; ++k) {
             if (neighbour_subarray(k)) {
                 neighbour_list.push_back(k);
             }
@@ -110,17 +120,15 @@ namespace dpxl {
         return neighbour_list;
     }
 
+    // Function to compute the length of a curve using a priority queue
     std::size_t Graph::compute_curve_length(std::size_t i, std::size_t j) {
-        auto neighbour_list = get_neighbours_list(i,j);
-        std::size_t number_neighbours = neighbour_list.size();
-        std::size_t curve_length = 0;
+        // Check if the starting pixel has valence 2
+        if (node_valence(i, j) != 2) {
+            return 0;
+        }
 
-
-        std::size_t height = m_neighbours.shape()[0];
-        std::size_t width = m_neighbours.shape()[1];
-
-        // Define movement offsets for neighbors (anti-clockwise, starting from east)
-        std::vector<std::pair<int, int>> offsets = {
+        // Offsets for neighbor traversal (anti-clockwise starting from east)
+        const std::vector<std::pair<int, int>> offsets = {
             {0, 1},   // East
             {-1, 1},  // North-East
             {-1, 0},  // North
@@ -131,39 +139,61 @@ namespace dpxl {
             {1, 1}    // South-East
         };
 
-        std::vector<std::size_t> reverse_offsets = {4,5,6,7,0,1,2,3};
+        // Reverse offsets for bidirectional traversal
+        const std::vector<std::size_t> reverse_offsets = {4, 5, 6, 7, 0, 1, 2, 3};
 
+        // Priority queue for BFS traversal (stores {length, pixel coordinates, direction})
+        using QueueElement = std::pair<std::size_t, std::pair<std::size_t, std::size_t>>;
+        std::queue<QueueElement> pq;
 
-        for (std::size_t n=0; n<number_neighbours; n++) {
-            std::size_t diagonal = neighbour_list[n];
-            // Determine the current neighbor coordinates for the given diagonal
-            int ni = i + offsets[diagonal].first;
-            int nj = j + offsets[diagonal].second;
+        // Visited set to avoid revisiting pixels
+        xt::xarray<bool> visited = xt::xarray<bool>::from_shape({get_height(), get_width()});
+        visited.fill(false);
 
-            
-            // Forward traversal
-            while (ni >= 0 && ni < height && nj >= 0 && nj < width) {
-                std::size_t next_diagonal = 8;
-                if (node_valence(ni,nj) != 2) break;
-                // Check if the neighbor is valence-2 and part of the curve
-                
-                auto other_neighbours = get_neighbours_list(ni,nj);
-                if (other_neighbours[0] != reverse_offsets[diagonal]) {
-                    next_diagonal = other_neighbours[0];
-                }
-                else {
-                    next_diagonal = other_neighbours[1];
-                }
-                
+        // Initialize the queue with the starting pixel
+        visited(i, j) = true;
+        auto neighbor_list = get_neighbours_list(i, j);
 
-
-                // Update length and move to the next neighbor
-                curve_length++;
-                ni += offsets[next_diagonal].first;
-                nj += offsets[next_diagonal].second;
-                diagonal = next_diagonal;
+        // Add neighbors to the queue
+        for (std::size_t direction : neighbor_list) {
+            int ni = i + offsets[direction].first;
+            int nj = j + offsets[direction].second;
+            if (ni >= 0 && ni < get_height() && nj >= 0 && nj < get_width()) {
+                pq.push({1, {ni, nj}}); // Length starts at 1
+                visited(ni, nj) = true;
             }
         }
+
+        std::size_t curve_length = 0;
+
+        // BFS traversal using the priority queue
+        while (!pq.empty()) {
+            auto [current_length, current_pixel] = pq.front();
+            pq.pop();
+
+            std::size_t ci = current_pixel.first;
+            std::size_t cj = current_pixel.second;
+            curve_length = std::max(curve_length, current_length);
+
+            if (node_valence(ci, cj) != 2) {
+                continue; // Stop if the pixel is not part of the curve
+            }
+
+            // Get neighbors of the current pixel
+            auto current_neighbors = get_neighbours_list(ci, cj);
+            for (std::size_t direction : current_neighbors) {
+                int ni = ci + offsets[direction].first;
+                int nj = cj + offsets[direction].second;
+
+                // Skip already visited nodes
+                if (ni >= 0 && ni < get_height() && nj >= 0 && nj < get_width() && !visited(ni, nj)) {
+                    pq.push({current_length + 1, {ni, nj}});
+                    visited(ni, nj) = true;
+                }
+            }
+        }
+
         return curve_length;
     }
+
 }

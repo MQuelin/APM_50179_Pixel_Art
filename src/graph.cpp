@@ -106,12 +106,11 @@ namespace dpxl {
         for (std::size_t i = 0; i < height - 1; ++i) {
             for (std::size_t j = 0; j < width - 1; ++j) {
                 if (m_neighbours(i,j,7) && m_neighbours(i + 1,j,1)){
-                    std::cout << "i, j = " << i << ", " << j << std::endl;
                     heuristics(i,j);
                 }
             }
         }
-    }
+    }    
 
     void Graph::remove_trivial_edges() {
         // this function removes the diagonal edges when all 4 corners of a square are the same colors (flat shaded region)
