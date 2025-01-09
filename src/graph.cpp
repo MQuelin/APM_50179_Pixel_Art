@@ -50,7 +50,7 @@ void Graph::init_graph() {
     std::size_t width = m_img.shape()[1];
     m_neighbours = xt::xarray<bool>::from_shape({height, width, 8});
     compute_neighbours();
-    resolve_diagonals();
+    remove_trivial_edges();
 }
     
 
