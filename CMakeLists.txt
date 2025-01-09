@@ -13,8 +13,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 include(CTest)
 add_subdirectory(external/googletest)
 
-add_subdirectory(external/boost EXCLUDE_FROM_ALL)
-set(BOOST_INCLUDE_LIBRARIES polygon)
+find_package(Boost 1.74.0 REQUIRED)
 
 add_subdirectory(examples)
 add_subdirectory(src)
