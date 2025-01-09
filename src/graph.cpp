@@ -13,20 +13,9 @@
 namespace dpxl {
 
 Graph::Graph(xt::xarray<float>& img) {
-    // Convert input image to YUV and store in m_img
-    cv::Mat img_bgr = cv::Mat(img.shape()[0], img.shape()[1], CV_32FC3, img.data());
-    cv::Mat img_yuv;
-    cv::cvtColor(img_bgr, img_yuv, cv::COLOR_BGR2YUV);
-
-    // Adapt OpenCV matrix to xtensor array
-    m_img = utils::mat_to_arr(img_yuv);
- 
-    // Initialize m_neighbours
-    std::size_t height = m_img.shape()[0];
-    std::size_t width = m_img.shape()[1];
-    m_neighbours = xt::xarray<bool>::from_shape({height, width, 8});
-    compute_neighbours();
-    remove_trivial_edges();
+    m_img = img;
+    
+    init_graph();
 }
 
 
@@ -52,6 +41,10 @@ Graph::Graph(const std::string& image_path) {
 
     //std::cout << "xtensor array \n" << m_img << std::endl;
 
+    init_graph();
+}
+
+void Graph::init_graph() {
     // Initialize m_neighbours
     std::size_t height = m_img.shape()[0];
     std::size_t width = m_img.shape()[1];

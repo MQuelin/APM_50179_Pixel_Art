@@ -22,6 +22,8 @@ private:
   xt::xarray<float> m_img;
   xt::xarray<bool> m_neighbours;
 
+  
+  void init_graph();
   void compute_neighbours();
   void remove_trivial_edges();
 
@@ -33,6 +35,6 @@ private:
   const float V_THRESHOLD = 6.0 / 255.0;
 
   // Scale factor for upscaling for the draw function
-    const int scale_factor = 100; // Adjust as needed for better visibility
+  const int scale_factor = 100; // Adjust as needed for better visibility
 };
 } // namespace dpxl
