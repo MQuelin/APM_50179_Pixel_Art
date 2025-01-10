@@ -21,15 +21,17 @@ namespace dpxl {
 
     cv::Mat draw_neighbours();
 
+    void compute_neighbours();
+    void resolve_diagonals();
+    void remove_trivial_edges();
+
   private:
     xt::xarray<float> m_img;
     xt::xarray<bool> m_neighbours;
 
     
     void init_graph();
-    void compute_neighbours();
-    void resolve_diagonals();
-    void remove_trivial_edges();
+    
 
     //defined in heuristics.cpp
     std::size_t node_valence(std::size_t i, std::size_t j);
