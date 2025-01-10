@@ -6,6 +6,7 @@
 #include <boost/polygon/segment_data.hpp>
 #include <boost/polygon/voronoi.hpp>
 #include <cstddef>
+#include <opencv2/core/mat.hpp>
 #include <set>
 #include <vector>
 
@@ -30,15 +31,25 @@ public:
   VoronoiCells() {};
 
   // Build a valency-2-collapsed voronoi representation of the pixel graph
-  void build_from_graph(const Graph g);
+  void build_from_graph(Graph g);
 
   // std::pair<size_t, size_t> node_position_from_idx(size_t idx);
 
   CellArray &get_cells() { return m_cells; }
   NodeArray &get_nodes() { return m_nodes; }
 
+  cv::Mat draw(size_t scale_factor);
+
 private:
+  size_t c_idx(size_t i, size_t j);
+  size_t n_idx(size_t i, size_t j, size_t k, size_t l);
+
+  std::pair<size_t, size_t> n_pos(size_t idx);
+
   void collapse_valency2_nodes();
+
+  size_t m_h;
+  size_t m_w;
 
   CellArray m_cells;
   NodeArray m_nodes;

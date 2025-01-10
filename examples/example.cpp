@@ -8,26 +8,12 @@
 #include <xtensor/xadapt.hpp>
 #include <xtensor/xarray.hpp>
 
-#include "depixel_lib/cells.hpp"
+#include "cells.hpp"
+#include "graph.hpp"
 
 #include <filesystem>
 #include <iostream>
 #include <xtensor/xtensor_forward.hpp>
-
-void test_voronoi_1() {
-
-  xt::xarray<float> img = {
-      {{1., 1., 1.}, {1., 1., 1.}, {1., 1., 1.}, {1., 1., 1.}},
-      {{1., 1., 1.}, {1., 1., 1.}, {1., 1., 1.}, {1., 1., 1.}},
-      {{0., 0., 0.}, {0., 0., 0.}, {0., 0., 0.}, {0., 0., 0.}},
-      {{0., 0., 0.}, {0., 0., 0.}, {0., 0., 0.}, {0., 0., 0.}}};
-
-  dpxl::Graph g(img);
-
-  dpxl::VoronoiCells c;
-
-  c.build_from_graph(g);
-}
 
 int main() {
   // Set the image path
@@ -52,7 +38,7 @@ int main() {
   }
 
   // Save the image to the output file
-  if (!imwrite(output_file, img)) {
+  if (!imwrite(output_file, img_base)) {
     std::cerr << "Failed to save the image to: " << output_file << std::endl;
     return 1;
   }
@@ -78,7 +64,32 @@ int main() {
   //   // imshow("Display window 2", img2);
   //   // cv::waitKey(0); // Wait for a keystroke in the window
 
-  test_voronoi_1();
+  dpxl::Graph graph("../examples/SpaceShip-24x24.png");
+
+  dpxl::VoronoiCells cells;
+
+  cells.build_from_graph(graph);
+
+  // return 0;
+
+  auto out_img = cells.draw(100);
+
+  // Define the output folder and file name
+  std::string output_file2 = output_folder + "/example_cells_noval2.png";
+
+  // Create the output folder if it doesn't exist
+  if (!std::filesystem::exists(output_folder)) {
+    std::filesystem::create_directories(output_folder);
+  }
+
+  // Save the image to the output file
+  if (!imwrite(output_file2, out_img)) {
+    std::cerr << "Failed to save the image to: " << output_file2 << std::endl;
+    return 1;
+  }
+
+  // Notify the user of the successful save
+  std::cout << "Image saved successfully to: " << output_file2 << std::endl;
 
   return 0;
 }
