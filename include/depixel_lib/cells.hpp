@@ -38,7 +38,8 @@ public:
   CellArray &get_cells() { return m_cells; }
   NodeArray &get_nodes() { return m_nodes; }
 
-  cv::Mat draw(size_t scale_factor);
+  cv::Mat draw(size_t scale_factor, const xt::xarray<float>& img);
+  cv::Mat colorCells(size_t scale_factor, const xt::xarray<float>& img);
 
 private:
   size_t c_idx(size_t i, size_t j);

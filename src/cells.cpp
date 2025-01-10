@@ -1,4 +1,5 @@
 #include "depixel_lib/cells.hpp"
+#include "depixel_lib/utils.hpp"
 
 #include <algorithm>
 #include <boost/polygon/voronoi_diagram.hpp>
@@ -206,8 +207,13 @@ std::pair<size_t, size_t> VoronoiCells::n_pos(size_t idx) {
   return std::make_pair(idx % (4 * m_w + 1), std::ldiv(idx, 4 * m_w + 1).quot);
 }
 
-cv::Mat VoronoiCells::draw(size_t scale_factor) {
-  cv::Mat img_bgr(m_h, m_w, CV_8UC3, cv::Scalar(255, 255, 255));
+cv::Mat VoronoiCells::draw(size_t scale_factor, const xt::xarray<float>& img) {
+  
+  //cv::Mat img_bgr(m_h, m_w, CV_8UC3, cv::Scalar(255, 255, 255));
+  // Create a copy of the base image to draw on
+  cv::Mat img_yuv = utils::arr_to_mat(img);
+  cv::Mat img_bgr;
+  cv::cvtColor(img_yuv, img_bgr, cv::COLOR_YUV2BGR);
 
   // Upscale the image
   cv::Mat output_image;
@@ -238,5 +244,45 @@ cv::Mat VoronoiCells::draw(size_t scale_factor) {
 
   return output_image;
 }
+
+cv::Mat VoronoiCells::colorCells(size_t scale_factor, const xt::xarray<float>& img) {
+    // Convert the input image to BGR format
+    cv::Mat img_yuv = utils::arr_to_mat(img);
+    cv::Mat img_bgr;
+    cv::cvtColor(img_yuv, img_bgr, cv::COLOR_YUV2BGR);
+
+    // Upscale the image
+    cv::Mat output_image;
+    cv::resize(img_bgr, output_image, cv::Size(), 4 * scale_factor + 1,
+               4 * scale_factor + 1, cv::INTER_NEAREST);
+
+    for (int y = 0; y < m_h; ++y) {
+        for (int x = 0; x < m_w; ++x) {
+            // Get the color of the pixel at (y, x)
+            cv::Vec3b pixel_color = img_bgr.at<cv::Vec3b>(y, x);
+
+            // Access the cell corresponding to the pixel
+            auto cell = m_cells[c_idx(y, x)];
+
+            // Create a vector of points to define the polygon
+            std::vector<cv::Point> polygon;
+            for (int k = 0; k < cell.size(); k++) {
+                auto node_pos = n_pos(cell[k]);
+                polygon.emplace_back(
+                    node_pos.first * scale_factor, // x-coordinate
+                    node_pos.second * scale_factor   // y-coordinate
+                );
+            }
+
+            // Fill the polygon with the pixel color
+            cv::fillPoly(output_image, std::vector<std::vector<cv::Point>>{polygon},
+                         cv::Scalar(pixel_color[0], pixel_color[1], pixel_color[2]));
+        }
+    }
+
+    return output_image;
+}
+
+
 
 } // namespace dpxl
