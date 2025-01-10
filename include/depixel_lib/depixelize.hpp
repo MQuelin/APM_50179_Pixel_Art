@@ -1,10 +1,11 @@
-#include <xtensor/xarray.hpp>
+#pragma once
 
 /**
- * @brief Takes a YUV image array and return an upscaled smooth version
- * @param img_array An image array containing YUV data, expected shape is
- * {nrows, ncols, 3}
- * @param scaling_factor The scaling factor of the upscaled image. If input
- * image is 32x32 and scaling_factor is 10. the output image will be 320x320
+ * @brief takes a relative path to an image and returns the upscaled version
+ * @param image_path, the relative path of the image, 
+ * @param save_image (optional), to save the different steps
  */
-xt::xarray<float> depixelize(xt::xarray<float> &a, float scaling);
+namespace dpxl {
+    void depixelize(const std::string& image_path, bool save_image=false);
+}
+

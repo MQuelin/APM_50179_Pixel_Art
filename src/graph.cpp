@@ -49,9 +49,6 @@ namespace dpxl {
         std::size_t height = get_height();
         std::size_t width = get_width();
         m_neighbours = xt::xarray<bool>::from_shape({height, width, 8});
-        compute_neighbours();
-        remove_trivial_edges();
-        resolve_diagonals();
     }
         
     std::size_t Graph::get_height() {

@@ -1,8 +1,6 @@
 #include "depixel_lib/graph.hpp"
 
 
-
-#include <xtensor/xarray.hpp>
 #include <xtensor/xadapt.hpp>
 #include <xtensor/xview.hpp>
 #include <xtensor/xio.hpp> 
