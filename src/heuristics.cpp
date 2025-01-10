@@ -1,50 +1,31 @@
 #include "depixel_lib/graph.hpp"
-
-
-#include <xtensor/xadapt.hpp>
 #include <xtensor/xview.hpp>
-#include <xtensor/xio.hpp> 
-#include <iostream>
 
-
+//This file implements the functions of Graph.hpp related to heuristic resolution of crossing diagonals
 
 namespace dpxl {
     void Graph::heuristics(std::size_t i, std::size_t j) {
-        // Step 1: Define weights for the heuristics
+        //Define weight for each of the heuristics
         int curve_weight = 0;
         int sparse_pixel_weight = 0;
         int island_weight = 0;
 
-        // Step 2: Curves Heuristic
-        // Check if the pixels are part of long curve features
-        
+        //Heuristic 1 : curve lengths from each of the 2 diagonals:   
         std::size_t curve_length_1 = std::max(compute_curve_length(i, j), compute_curve_length(i+1,j+1)); // Diagonal 1 (Top-left to Bottom-right)
         std::size_t curve_length_2 = std::max(compute_curve_length(i, j+1), compute_curve_length(i+1,j)); // Diagonal 2 (Top-right to Bottom-left)
-        
-        std::cout << "Curve1 " << curve_length_1 << std::endl;
-        std::cout << "Curve2 " << curve_length_2 << std::endl;
 
+        //Positive votes for 1, negative for 2
         curve_weight = static_cast<int>(curve_length_1) - static_cast<int>(curve_length_2);
 
-        std::cout << "Curve " << curve_weight << std::endl;
+        // Heuristic 2 : Sparse Pixels Heuristic
+        // Measure the size difference of connected components in an 8x8 window between diagonal 1 and diagonal 2
+        sparse_pixel_weight = compute_component_size_difference(i, j);       
 
-        // Step 3: Sparse Pixels Heuristic
-        // Measure the size of connected components for both diagonals in an 8x8 window
-        sparse_pixel_weight = compute_component_size_difference(i, j);
-
-        std::cout << "Sparse " << sparse_pixel_weight << std::endl; 
-
-        // Step 4: Islands Heuristic
-        // Check for valence-1 nodes that would create a single disconnected pixel
-        
-
-        //We treat the case of Islands
+        // Heuristic 3 : We treat the case of Islands
         if (node_valence(i,j) == 1 || node_valence(i+1, j+1) == 1) island_weight += 5;
         else if (node_valence(i+1,j) == 1 || node_valence(i, j+1) == 1) island_weight -= 5;
 
-        std::cout << "Island " << island_weight << std::endl;
-
-        // Step 5: Determine which diagonal to keep based on weights
+        //Compute total weight
         int total_weight = curve_weight + sparse_pixel_weight + island_weight;
 
         if (total_weight > 0) {
@@ -67,8 +48,8 @@ namespace dpxl {
 
     }
 
-
     std::size_t Graph::node_valence(std::size_t i, std::size_t j){
+        // Computes the valence of a node.
         std::size_t valence = 0;
         for (std::size_t k=0; k<8; ++k){
             if (m_neighbours(i,j,k)) valence++;
@@ -77,6 +58,7 @@ namespace dpxl {
     }
 
     int Graph::compute_component_size_difference(std::size_t i, std::size_t j){
+        //Computes the difference of the component attached to 1 compared to the one attached to 2.
         xt::xarray<float> color_1 = xt::view(m_img, i, j, xt::all());
         xt::xarray<float> color_2 = xt::view(m_img, i + 1, j, xt::all());
         std::size_t height = get_height();
@@ -101,13 +83,12 @@ namespace dpxl {
                 }
             }
         }
-
         return sum;
     }
 
     std::vector<std::size_t> Graph::get_neighbours_list(std::size_t i, std::size_t j) {
+        // Computes the neighbours list of the node of coordinate (i,j)
         auto neighbour_subarray = xt::view(m_neighbours, i,j, xt::all());
-        //std::cout << "Neighbour array " << neighbour_subarray << std::endl;
         std::vector<std::size_t> neighbour_list;
         // Iterate over the subarray to find the indices of true values
         for (std::size_t k = 0; k < 8; ++k) {
@@ -117,9 +98,10 @@ namespace dpxl {
         }
         return neighbour_list;
     }
-
-    // Function to compute the length of a curve using a priority queue
+    
     std::size_t Graph::compute_curve_length(std::size_t i, std::size_t j) {
+        // Compute the length of a curve using a priority queue
+
         // Check if the starting pixel has valence 2
         if (node_valence(i, j) != 2) {
             return 0;
@@ -190,8 +172,6 @@ namespace dpxl {
                 }
             }
         }
-
         return curve_length;
     }
-
 }
