@@ -81,7 +81,9 @@ void depixelize(const std::string &image_path, bool save_image) {
   cells.build_from_graph(graph);
 
   if (save_image) {
-    cv::Mat voronoi_cells = cells.draw(100);
+    //represent the voronoi cells
+    cv::Mat voronoi_cells = cells.draw(100, graph.get_image());
+  
 
     fs::path output_path = output_dir / (file_name + "_voronoi_cells.png");
 
@@ -90,6 +92,17 @@ void depixelize(const std::string &image_path, bool save_image) {
     } else {
       std::cerr << "Failed to save the output image." << std::endl;
     }
+  }
+
+  cv::Mat voronoi_cells_colored = cells.colorCells(100, graph.get_image());
+
+  fs::path output_path = output_dir / (file_name + "_voronoi_cells_colored.png");
+
+  if (cv::imwrite(output_path.string(), voronoi_cells_colored)) {
+    std::cout << "Output image saved to " << output_path << std::endl;
+  } else {
+    std::cerr << "Failed to save the output image." << std::endl;
+  }
 
     // 4 - Define splines based on reshaped cells
     // 5 - Create new tensor with resolution scaled based on scaling
@@ -112,7 +125,8 @@ void depixelize(const std::string &image_path, bool save_image) {
     // return upscaled_img_arr;
 
     // TODO actuallly process array correctly
-  }
+
+}
 
 } // namespace dpxl
 
