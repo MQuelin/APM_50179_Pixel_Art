@@ -1,5 +1,6 @@
 #include "depixel_lib/cells.hpp"
 
+#include <algorithm>
 #include <boost/polygon/voronoi_diagram.hpp>
 #include <cstddef>
 #include <iterator>
@@ -143,7 +144,7 @@ void VoronoiCells::build_from_graph(Graph g) {
       // , creating a graph
       // We assume trigonometric ordering of the nodes
       auto num_of_nodes = cell.size();
-      for (int k; k < num_of_nodes; k++) {
+      for (int k = 0; k < num_of_nodes; k++) {
         m_nodes[cell[k]].insert(cell[(k + 1) % num_of_nodes]);
         m_nodes[cell[(k + 1) % num_of_nodes]].insert(cell[k]);
       }
@@ -154,6 +155,8 @@ void VoronoiCells::build_from_graph(Graph g) {
 }
 
 void VoronoiCells::collapse_valency2_nodes() {
+  std::vector<size_t> deleted_nodes;
+
   for (int k = 0; k < m_nodes.size(); k++) {
     auto &node = m_nodes[k];
     // We only collapse valency 2 nodes that aren't on the border
@@ -172,11 +175,30 @@ void VoronoiCells::collapse_valency2_nodes() {
       node.erase(*neighbour_idx_0_ptr);
       node.erase(*neighbour_idx_1_ptr);
 
-      // Todo create a list of erased nodes
-      // Then go through the cells again, simply deleting valency 2 nodes
-      // Q? how to find element in a vector efficiently ?
-      // How to delete element in a vector efficiently ?
+      // Create a list of erased nodes
+      // Then go through the cells again, deleting valency 2 nodes
+      //
+      // TODO If we knew in how many cell a node was, we could add it to the
+      // vector after having deleted the node enough time its deleted from
+      // deleted_nodes to make traversal shorter ?
+      deleted_nodes.push_back(k);
     }
+  }
+
+  for (int k = 0; k < m_cells.size(); k++) {
+    auto cell = m_cells[k];
+    std::vector<size_t> new_cell;
+
+    for (int i = 0; i < cell.size(); i++) {
+      if (std::find(deleted_nodes.begin(), deleted_nodes.end(), cell[i]) ==
+          deleted_nodes.end()) {
+        // Node isn't in the deleted_nodes list
+        // We add it to the new cell
+        new_cell.push_back(cell[i]);
+      }
+    }
+
+    m_cells[k] = new_cell;
   }
 }
 
@@ -203,8 +225,6 @@ cv::Mat VoronoiCells::draw(size_t scale_factor) {
       for (int k = 0; k < cell.size(); k++) {
         auto node_1_pos = n_pos(cell[k]);
         auto node_2_pos = n_pos(cell[(k + 1) % cell.size()]);
-        std::cout << "Edge position: " << node_1_pos.first << node_1_pos.second
-                  << node_2_pos.first << node_2_pos.second << "\n";
 
         cv::line(output_image,
                  cv::Point(node_1_pos.second * scale_factor,

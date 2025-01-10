@@ -16,9 +16,13 @@
 #include <xtensor/xtensor_forward.hpp>
 
 int main() {
+
+  //// Image target
+  // Modify this string to change the target of the depixelisation:
+  auto target_img_name = "../examples/SpaceShip-24x24.png";
+
   // Set the image path
-  cv::Mat img_base =
-      imread("../examples/SpaceShip-24x24.png", cv::IMREAD_COLOR);
+  cv::Mat img_base = imread(target_img_name, cv::IMREAD_COLOR);
   cv::Mat img;
   img_base.convertTo(img, CV_32FC3, 1. / 255.);
 
@@ -30,7 +34,7 @@ int main() {
 
   // Define the output folder and file name
   std::string output_folder = "visualisation";
-  std::string output_file = output_folder + "/example_output_image.png";
+  std::string output_file = output_folder + "/example_base_image.png";
 
   // Create the output folder if it doesn't exist
   if (!std::filesystem::exists(output_folder)) {
@@ -64,7 +68,18 @@ int main() {
   //   // imshow("Display window 2", img2);
   //   // cv::waitKey(0); // Wait for a keystroke in the window
 
-  dpxl::Graph graph("../examples/SpaceShip-24x24.png");
+  dpxl::Graph graph(target_img_name);
+
+  auto out_graph_img = graph.draw_neighbours();
+
+  // Define the output folder and file name
+  std::string output_file2 = output_folder + "/example_graph.png";
+
+  // Save the image to the output file
+  if (!imwrite(output_file2, out_graph_img)) {
+    std::cerr << "Failed to save the image to: " << output_file2 << std::endl;
+    return 1;
+  }
 
   dpxl::VoronoiCells cells;
 
@@ -75,21 +90,17 @@ int main() {
   auto out_img = cells.draw(100);
 
   // Define the output folder and file name
-  std::string output_file2 = output_folder + "/example_cells_noval2.png";
-
-  // Create the output folder if it doesn't exist
-  if (!std::filesystem::exists(output_folder)) {
-    std::filesystem::create_directories(output_folder);
-  }
+  std::string output_file3 = output_folder + "/example_cells_collapsed.png";
 
   // Save the image to the output file
-  if (!imwrite(output_file2, out_img)) {
-    std::cerr << "Failed to save the image to: " << output_file2 << std::endl;
+  if (!imwrite(output_file3, out_img)) {
+    std::cerr << "Failed to save the image to: " << output_file3 << std::endl;
     return 1;
   }
 
   // Notify the user of the successful save
-  std::cout << "Image saved successfully to: " << output_file2 << std::endl;
+  std::cout << "Images saved successfully\nView them under build/visualisation/"
+            << std::endl;
 
   return 0;
 }
